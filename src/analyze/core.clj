@@ -51,7 +51,6 @@
      :var (field 'var expr)
      :meta meta
      :init init
-     :children [meta init]
      :init-provided (field 'initProvided expr)
      :is-dynamic (field 'isDynamic expr)
      :Expr-obj expr}))
@@ -87,7 +86,6 @@
      :env env
      :bindings bindings
      :body body
-     :children (conj bindings body)
      :Expr-obj expr}))
 
 ;; letfn
@@ -101,7 +99,6 @@
      :env env
      :body body
      :binding-inits binding-inits
-     :children (conj binding-inits body)
      :Expr-obj expr}))
 
 ;; LocalBindingExpr
@@ -113,7 +110,6 @@
      :env env
      :local-binding local-binding
      :tag (.tag expr)
-     :children [local-binding]
      :Expr-obj expr}))
 
 ;; Methods
@@ -132,7 +128,6 @@
                (@#'reflect/method->map method))
      :args args
      :tag (field 'tag expr)
-     :children args
      :Expr-obj expr}))
 
 (defmethod Expr->map Compiler$InstanceMethodExpr
@@ -149,7 +144,6 @@
                (@#'reflect/method->map method))
      :args args
      :tag (field 'tag expr)
-     :children args
      :Expr-obj expr}))
 
 ;; Fields
@@ -167,6 +161,7 @@
      :tag (field 'tag expr)
      :Expr-obj expr}))
 
+;; TODO: Missing :Expr-obj?
 (defmethod Expr->map Compiler$InstanceFieldExpr
   [^Compiler$InstanceFieldExpr expr env]
   (let [field (partial field-accessor Compiler$InstanceFieldExpr)
@@ -179,8 +174,7 @@
      :field (when-let [field (field 'field expr)]
               (@#'reflect/field->map field))
      :field-name (field 'fieldName expr)
-     :tag (field 'tag expr)
-     :children [target]}))
+     :tag (field 'tag expr)}))
 
 (defmethod Expr->map Compiler$NewExpr
   [^Compiler$NewExpr expr env]
@@ -191,7 +185,6 @@
              (@#'reflect/constructor->map ctor))
      :class (.c expr)
      :args args
-     :children args
      :Expr-obj expr}))
 
 ;; Literals
@@ -219,7 +212,6 @@
     {:op :set
      :env env
      :keys keys
-     :children keys
      :Expr-obj expr}))
 
 ;; vector literal
@@ -230,7 +222,6 @@
     {:op :vector
      :env env
      :args args
-     :children args
      :Expr-obj expr}))
 
 ;; map literal
@@ -241,7 +232,6 @@
     {:op :map
      :env env
      :keyvals keyvals
-     :children keyvals
      :Expr-obj expr}))
 
 ;; Untyped
@@ -253,7 +243,6 @@
     {:op :monitor-enter
      :env env
      :target target
-     :children [target]
      :Expr-obj expr}))
 
 (defmethod Expr->map Compiler$MonitorExitExpr
@@ -263,7 +252,6 @@
       {:op :monitor-exit
        :env env
        :target target
-       :children [target]
        :Expr-obj expr}))
 
 (defmethod Expr->map Compiler$ThrowExpr
@@ -273,7 +261,6 @@
     {:op :throw
      :env env
      :exception exception
-     :children [exception]
      :Expr-obj expr}))
 
 ;; Invokes
@@ -295,7 +282,6 @@
       :is-direct (field 'isDirect expr)
       :site-index (field 'siteIndex expr)
       :protocol-on (field 'protocolOn expr)
-      :children (cons fexpr args)
       :Expr-obj expr}
      (when-let [m (field 'onMethod expr)]
        {:method (@#'reflect/method->map m)}))))
@@ -311,7 +297,6 @@
      :kw (field 'kw expr)
      :tag (field 'tag expr)
      :target target
-     :children [target]
      :Expr-obj expr}))
 
 ;; TheVarExpr
@@ -393,7 +378,6 @@
      :variadic-method (when-let [variadic-method (.variadicMethod expr)]
                         (ObjMethod->map variadic-method env))
      :tag (.tag expr)
-     :children methods
      :Expr-obj expr}))
 
 ;; NewInstanceExpr
@@ -408,7 +392,6 @@
      :mmap (field 'mmap expr)
      :covariants (field 'covariants expr)
      :tag (.tag expr)
-     :children methods
      :Expr-obj expr}))
 
 ;; InstanceOfExpr
@@ -420,7 +403,6 @@
     {:op :instance-of
      :class (field 'c expr)
      :the-expr exp
-     :children [exp]
      :Expr-obj expr}))
 
 ;; MetaExpr
@@ -433,7 +415,6 @@
      :env env
      :meta meta
      :expr the-expr
-     :children [meta the-expr]
      :Expr-obj expr}))
 
 ;; do
@@ -444,7 +425,6 @@
     {:op :do
      :env env
      :exprs exprs
-     :children exprs
      :Expr-obj expr}))
 
 ;; if
@@ -460,7 +440,6 @@
      :test test
      :then then
      :else else
-     :children [test then else]
      :Expr-obj expr}))
 
 ;; case
@@ -476,7 +455,6 @@
      :tests tests
      :thens thens
      :default default
-     :children (concat [the-expr] tests thens [default])
      :Expr-obj expr}))
 
 
@@ -499,7 +477,6 @@
      :env env
      :target target
      :val val
-     :children [target val]
      :Expr-obj expr}))
 
 ;; TryExpr
@@ -528,7 +505,6 @@
      :catch-exprs catch-exprs
      :ret-local (.retLocal expr)
      :finally-local (.finallyLocal expr)
-     :children (concat [try-expr] (when finally-expr [finally-expr]) catch-exprs)
      :Expr-obj expr}))
 
 ;; RecurExpr
@@ -544,7 +520,6 @@
             :source (field 'source expr))
      :loop-locals loop-locals
      :args args
-     :children (concat loop-locals args)
      :Expr-obj expr}))
 
 (defmethod Expr->map Compiler$MethodParamExpr
@@ -555,7 +530,6 @@
      :env env
      :class (field 'c expr)
      :can-emit-primitive (method 'canEmitPrimitive expr [])
-     :children []
      :Expr-obj expr}))
 
 (defmethod Expr->map :default

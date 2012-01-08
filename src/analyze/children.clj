@@ -9,13 +9,6 @@
 (defmethod children :def [expr]
   [(:meta expr) (:init expr)])
 
-(defmethod children :local-binding [expr]
-  (when-let [init (:init expr)]
-    [init]))
-
-(defmethod children :binding-init [expr]
-  [(:local-binding expr) (:init expr)])
-
 (defmethod children :let [expr]
   (conj (:bindings expr)
         (:body expr)))
@@ -24,6 +17,7 @@
   (conj (:binding-inits expr)
         (:body expr)))
 
+;; TODO: ill-named?
 (defmethod children :local-binding-expr [expr]
   [(:local-binding expr)])
 
@@ -123,6 +117,7 @@
   (concat (:loop-locals expr)
           (:args expr)))
 
-
+(defmethod children :method-param [expr]
+  nil)
 
   
