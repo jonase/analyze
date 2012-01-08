@@ -57,6 +57,7 @@
 
 ;; let
 
+;; NOTE: LocalBinding is not an expression
 (defn LocalBinding->map [^Compiler$LocalBinding lb env]
   (let [init (when-let [init (.init lb)]
                (Expr->map init env))]
@@ -65,23 +66,22 @@
      :sym (.sym lb)
      :tag (.tag lb)
      :init init
-     :children (when init [init])
      :LocalBinding-obj lb}))
 
+;; NOTE: BindingInit is not an expression
 (defn BindingInit->vec [^Compiler$BindingInit bi env]
   (let [local-binding (LocalBinding->map (.binding bi) env)
         init (Expr->map (.init bi) env)]
     {:op :binding-init
      :local-binding local-binding
      :init init
-     :children [local-binding init]
      :BindingInit-obj bi}))
 
 (defmethod Expr->map Compiler$LetExpr
   [^Compiler$LetExpr expr env]
   (let [body (Expr->map (.body expr) env)
         bindings (-> (doall (map BindingInit->vec (.bindingInits expr) (repeat env)))
-                   vec)]
+                     vec)]
     {:op :let
      :env env
      :bindings bindings
@@ -343,15 +343,16 @@
                            (assert (= 2 (count args)))
                            (-> args first class)))
 
+;; NOTE: NewInstanceMethod is not an expression
 (defmethod ObjMethod->map Compiler$NewInstanceMethod 
   [^Compiler$NewInstanceMethod obm env]
   (let [body (Expr->map (.body obm) env)]
     {:op :new-instance-method
      :env env
      :body body
-     :children [body]
      :ObjMethod-obj obm}))
 
+;; NOTE: FnMethod is not an expression
 (defmethod ObjMethod->map Compiler$FnMethod 
   [^Compiler$FnMethod obm env]
   (let [body (Expr->map (.body obm) env)
@@ -366,7 +367,6 @@
                    (if rest-param
                      (LocalBinding->map rest-param env)
                      rest-param))
-     :children [body]
      :ObjMethod-obj obm}))
 
 (defmethod Expr->map Compiler$FnExpr
@@ -481,6 +481,7 @@
 
 ;; TryExpr
 
+;; NOTE: CatchClause is not an expression
 (defn CatchClause->map [^Compiler$TryExpr$CatchClause ctch env]
   (let [local-binding (LocalBinding->map (.lb ctch) env)
         handler (Expr->map (.handler ctch) env)]
@@ -489,7 +490,6 @@
      :class (.c ctch)
      :local-binding local-binding
      :handler handler
-     :children [local-binding handler]
      :CatchClause-obj ctch}))
 
 (defmethod Expr->map Compiler$TryExpr

@@ -17,6 +17,13 @@
   (conj (:binding-inits expr)
         (:body expr)))
 
+(defmethod children :local-binding [expr]
+  (when-let [init (:init expr)]
+    [init]))
+
+(defmethod children :binding-init [expr]
+  [(:local-binding expr) (:init expr)])
+
 ;; TODO: ill-named?
 (defmethod children :local-binding-expr [expr]
   [(:local-binding expr)])
@@ -68,6 +75,9 @@
 (defmethod children :keyword-invoke [expr]
   [(:target expr)])
 
+(defmethod children :var [expr]
+  nil)
+
 (defmethod children :the-var [expr]
   nil)
 
@@ -78,6 +88,12 @@
 (defmethod children :obj-expr [expr]
   nil)
 
+(defmethod children :new-instance-method [expr]
+  [(:body expr)])
+
+(defmethod children :fn-method [expr]
+  [(:body expr)])
+
 ;; TODO: ill-named?
 (defmethod children :fn-expr [expr]
   (:methods expr))
@@ -87,13 +103,16 @@
   (:methods children))
 
 (defmethod children :instance-of [expr]
-  [(:the-expr exp)])
+  [(:the-expr expr)])
 
 (defmethod children :meta [expr]
   [(:meta expr) (:expr expr)])
 
 (defmethod children :if [expr]
   [(:test expr) (:then expr) (:else expr)])
+
+(defmethod children :do [expr]
+  (:exprs expr))
 
 (defmethod children :case* [expr]
   (concat [(:the-expr expr)]
@@ -106,6 +125,9 @@
 
 (defmethod children :set! [expr]
   [(:target expr) (:val expr)])
+
+(defmethod children :catch [expr]
+  [(:local-binding expr) (:handler expr)])
 
 (defmethod children :try [expr]
   (concat [(:try-expr expr)]
@@ -120,4 +142,9 @@
 (defmethod children :method-param [expr]
   nil)
 
-  
+
+
+(defn traverse [expr]
+  (println (:op expr))
+  (doseq [cexpr (children expr)]
+    (traverse cexpr)))
