@@ -1,5 +1,6 @@
 (ns analyze.examples.dynvars
-  (:require [analyze.core :as analyze]))
+  (:require [analyze.core :as analyze]
+            [analyze.children :as children]))
 
 (defn earmuffed? [sym]
   (let [s (name sym)]
@@ -17,7 +18,7 @@
 (defn find-and-check-defs [expr]
   (when (= :def (:op expr))
     (check-def expr))
-  (doseq [child-expr (:children expr)]
+  (doseq [child-expr (children/children expr)]
     (find-and-check-defs child-expr)))
 
 (find-and-check-defs
