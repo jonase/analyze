@@ -2,8 +2,7 @@
 
 (ns analyze.examples.reflection
   "Same as *warn-on-reflection*"
-  (:require [analyze.core :as analyze]
-            [analyze.children :as children]))
+  (:require [analyze.core :as analyze]))
 
 (defn check-new [exp]
   (when (not (:ctor exp))
@@ -35,7 +34,7 @@
     :instance-field (check-instance-field exp)
     nil)
 
-  (doseq [c (children/children exp)]
+  (doseq [c (analyze/children exp)]
     (check-for-reflection c)))
 
 (def analyzed

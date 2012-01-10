@@ -2,7 +2,6 @@
   "Warns on invocations of `set!` inside transactions.
   Entry point `forbid-side-effects-in-transaction`"
   (:require [analyze.core :as analyze]
-            [analyze.children :as children]
             [clojure.reflect :as reflect]))
 
 (def transaction-method
@@ -14,14 +13,14 @@
   (when (= :set! (:op exp))
     (binding [*out* *err*]
       (println "WARNING: Side effect in transaction")))
-  (doseq [child-exp (children/children exp)]
+  (doseq [child-exp (analyze/children exp)]
     (warn-on-side-effect child-exp)))
 
 (defn forbid-side-effects-in-transaction [exp]
   (when (and (= :static-method (:op exp))
              (= transaction-method (:method exp)))
     (warn-on-side-effect (first (:args exp))))
-  (doseq [child-exp (:children exp)]
+  (doseq [child-exp (analyze/children exp)]
     (forbid-side-effects-in-transaction child-exp)))
 
 ;; Examples

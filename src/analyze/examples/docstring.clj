@@ -1,8 +1,7 @@
 (ns analyze.examples.docstring
   "Warns on suspected misplaced docstrings in function definitions.
   Entry point `find-and-check-defs`"
-  (:require [analyze.core :as analyze]
-            [analyze.children :as children]))
+  (:require [analyze.core :as analyze]))
 
 (defn check-def [exp]
   (when (= :fn-expr (-> exp :init :op))
@@ -19,7 +18,7 @@
 (defn find-and-check-defs [exp]
   (when (= :def (:op exp))
     (check-def exp))
-  (doseq [child-exp (children/children exp)]
+  (doseq [child-exp (analyze/children exp)]
     (find-and-check-defs child-exp)))
 
 ;; Examples

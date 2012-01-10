@@ -589,6 +589,8 @@
         (binding [*ns* (find-ns ns)]
           (doall (map afn frms)))))))
 
+(load "children")
+
 (comment
 (analyze-one {:ns {:name 'clojure.core} :context :eval} '(try (throw (Exception.)) (catch Exception e (throw e)) (finally 33)))
 (analyze-one {:ns {:name 'clojure.core} :context :eval} '(try ))

@@ -1,9 +1,6 @@
-(ns analyze.children)
-;; for code walking
+(in-ns 'analyze.core)
 
 (defmulti children :op)
-
-
 
 ;; TODO: nil vals 
 (defmethod children :def [expr]

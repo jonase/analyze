@@ -1,6 +1,5 @@
 (ns analyze.examples.nsforms
-  (:require [analyze.core :as analyze]
-            [analyze.children :as children]))
+  (:require [analyze.core :as analyze]))
 
 (defn warn-on-naked-use [use-expr]
   (doseq [s (map :val (:args use-expr))
@@ -15,7 +14,7 @@
 (defn find-and-analyze-use-forms [expr]
   (when (use? expr)
     (warn-on-naked-use expr))
-  (doseq [child-expr (children/children expr)]
+  (doseq [child-expr (analyze/children expr)]
     (find-and-analyze-use-forms child-expr)))
 
 (find-and-analyze-use-forms

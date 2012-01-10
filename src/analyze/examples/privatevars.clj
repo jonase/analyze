@@ -1,6 +1,5 @@
 (ns analyze.examples.privatevars
   (:require [analyze.core :as analyze]
-            [analyze.children :as children]
             [clojure.set :as set]
             [clojure.pprint :as pp]))
 
@@ -20,7 +19,7 @@
   (if (= :var (:op expr))
     {(:var expr) 1}
     (apply merge-with +
-           (map var-count (children/children expr)))))
+           (map var-count (analyze/children expr)))))
 
 (defn check-usage-of-private-vars [exprs]
   (let [v-count (apply merge-with + (map var-count exprs))]
