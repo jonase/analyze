@@ -138,10 +138,3 @@
 
 (defmethod children :method-param [expr]
   nil)
-
-
-
-(defn traverse [expr]
-  (println (:op expr))
-  (doseq [cexpr (children expr)]
-    (traverse cexpr)))

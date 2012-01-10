@@ -591,6 +591,14 @@
 
 (load "children")
 
+(defn expr-seq
+  "Given an expression, returns a lazy sequence of the expressions
+  followed by its children (in a depth first manner)"
+  [expr]
+  (tree-seq #(-> % children boolean)
+            children
+            expr))
+
 (comment
 (analyze-one {:ns {:name 'clojure.core} :context :eval} '(try (throw (Exception.)) (catch Exception e (throw e)) (finally 33)))
 (analyze-one {:ns {:name 'clojure.core} :context :eval} '(try ))
