@@ -487,14 +487,14 @@
 
 (defmethod analysis->map Compiler$TryExpr$CatchClause
   [^Compiler$TryExpr$CatchClause ctch env]
-  (let [local-binding (analysis->map (.lb ctch) env)
+  (let [lb (local-binding (.lb ctch) env)
         handler (analysis->map (.handler ctch) env)]
     {:op :catch
      :env env
      :class (.c ctch)
-     :local-binding local-binding
+     :local-binding lb
      :handler handler
-     :children [local-binding handler]
+     :children [(:init lb) handler]
      :CatchClause-obj ctch}))
 
 (defmethod analysis->map Compiler$TryExpr
