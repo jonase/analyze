@@ -80,8 +80,8 @@
      :binding-inits binding-inits
      :body body
      :is-loop (.isLoop expr)
-     :children (let [init (vec (map #(-> % :local-binding :init) binding-inits))]
-                 (conj init body))
+     :children (let [inits (vec (map #(-> % :local-binding :init) binding-inits))]
+                 (conj inits body))
      :Expr-obj expr}))
 
 ;; letfn
@@ -89,13 +89,13 @@
 (defmethod analysis->map Compiler$LetFnExpr
   [^Compiler$LetFnExpr expr env]
   (let [body (analysis->map (.body expr) env)
-        binding-inits (-> (doall (map analysis->map (.bindingInits expr) (repeat env)))
-                        vec)]
+        binding-inits (vec (map binding-init (.bindingInits expr) (repeat env)))]
     {:op :letfn
      :env env
      :body body
      :binding-inits binding-inits
-     :children (conj binding-inits body)
+     :children (let [inits (vec (map #(-> % :local-binding :init) binding-inits))]
+                 (conj inits body))
      :Expr-obj expr}))
 
 ;; LocalBindingExpr
