@@ -61,9 +61,9 @@
 (defn local-binding [^Compiler$LocalBinding lb env]
   {:sym (.sym lb)
    :tag (.tag lb)
-   :init (analysis->map (.init lb) env)
+   :init (when-let [init (.init lb)]
+           (analysis->map init env))
    :idx (.idx lb)
-   :name (.name lb)
    :is-arg (.isArg lb)
    :LocalBinding-obj lb})
 
@@ -81,7 +81,7 @@
      :body body
      :is-loop (.isLoop expr)
      :children (let [init (vec (map #(-> % :local-binding :init) binding-inits))]
-                 (conj vec body))
+                 (conj init body))
      :Expr-obj expr}))
 
 ;; letfn
@@ -102,11 +102,10 @@
 
 (defmethod analysis->map Compiler$LocalBindingExpr
   [^Compiler$LocalBindingExpr expr env]
-  (let [local-binding (analysis->map (.b expr) env)]
-    {:op :local-binding-expr
-     :env env
-     :local-binding local-binding
-     :Expr-obj expr}))
+  {:op :local-binding-expr
+   :env env
+   :local-binding (local-binding (.b expr) env)
+   :Expr-obj expr})
 
 ;; Methods
 
@@ -357,26 +356,17 @@
      :children [body]
      :ObjMethod-obj obm}))
 
-(defmethod analysis->map Compiler$FnMethod 
-  [^Compiler$FnMethod obm env]
-  (let [body (analysis->map (.body obm) env)
-        required-params (doall (map analysis->map (.reqParms obm) (repeat env)))]
-    {:op :fn-method
-     :env env
-     :body body
-     ;; Map LocalExpr@xx -> LocalExpr@xx
-     ;   :locals (map analysis->map (keys (.locals obm)) (repeat env))
-     :required-params required-params
-     :rest-param (let [rest-param (.restParm obm)]
-                   (if rest-param
-                     (analysis->map rest-param env)
-                     rest-param))
-     :children [body]
-     :ObjMethod-obj obm}))
+(defn fn-method [^Compiler$FnMethod method env]
+  {:env env
+   :body (analysis->map (.body method) env)
+   :required-params (vec (map local-binding (.reqParms method) (repeat env)))
+   :rest-param (when-let [rest-param (.restParm method)]
+                 (analysis->map rest-param))
+   :FnMethod-obj method})
 
 (defmethod analysis->map Compiler$FnExpr
   [^Compiler$FnExpr expr env]
-  (let [methods (doall (map analysis->map (.methods expr) (repeat env)))]
+  (let [methods (map fn-method (.methods expr) (repeat env))]
     {:op :fn-expr
      :env env
      :methods methods
@@ -384,7 +374,7 @@
                         (analysis->map variadic-method env))
      :tag (.tag expr)
      :name (symbol (or (.thisName expr) ""))
-     :children methods
+     :children (map :body methods)
      :Expr-obj expr}))
 
 ;; NewInstanceExpr
