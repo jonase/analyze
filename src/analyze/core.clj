@@ -58,39 +58,30 @@
 
 ;; let
 
-(defmethod analysis->map Compiler$LocalBinding
-  [^Compiler$LocalBinding lb env]
-  (let [init (when-let [init (.init lb)]
-               (analysis->map init env))]
-    {:op :local-binding
-     :env env
-     :sym (.sym lb)
-     :tag (.tag lb)
-     :init init
-     :children (when init [init])
-     :LocalBinding-obj lb}))
+(defn local-binding [^Compiler$LocalBinding lb env]
+  {:sym (.sym lb)
+   :tag (.tag lb)
+   :init (analysis->map (.init lb) env)
+   :idx (.idx lb)
+   :name (.name lb)
+   :is-arg (.isArg lb)
+   :LocalBinding-obj lb})
 
-(defmethod analysis->map Compiler$BindingInit
-  [^Compiler$BindingInit bi env]
-  (let [local-binding (analysis->map (.binding bi) env)
-        init (analysis->map (.init bi) env)]
-    {:op :binding-init
-     :local-binding local-binding
-     :init init
-     :children [local-binding init]
-     :BindingInit-obj bi}))
+(defn binding-init [^Compiler$BindingInit bi env]
+  {:local-binding (local-binding (.binding bi) env)
+   :BindingInit-obj bi})
 
 (defmethod analysis->map Compiler$LetExpr
   [^Compiler$LetExpr expr env]
   (let [body (analysis->map (.body expr) env)
-        binding-inits (-> (doall (map analysis->map (.bindingInits expr) (repeat env)))
-                         vec)]
+        binding-inits (vec (map binding-init (.bindingInits expr) (repeat env)))]
     {:op :let
      :env env
      :binding-inits binding-inits
      :body body
      :is-loop (.isLoop expr)
-     :children (conj binding-inits body)
+     :children (let [init (vec (map #(-> % :local-binding :init) binding-inits))]
+                 (conj vec body))
      :Expr-obj expr}))
 
 ;; letfn
@@ -115,8 +106,6 @@
     {:op :local-binding-expr
      :env env
      :local-binding local-binding
-     :tag (.tag expr)
-     :children [local-binding]
      :Expr-obj expr}))
 
 ;; Methods
