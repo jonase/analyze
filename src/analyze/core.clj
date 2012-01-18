@@ -518,7 +518,7 @@
 (defmethod analysis->map Compiler$RecurExpr
   [^Compiler$RecurExpr expr env]
   (let [field (partial field-accessor Compiler$RecurExpr)
-        loop-locals (doall (map analysis->map (.loopLocals expr) (repeat env)))
+        loop-locals (map local-binding (.loopLocals expr) (repeat env))
         args (doall (map analysis->map (.args expr) (repeat env)))]
     {:op :recur
      :env (assoc env
@@ -526,7 +526,7 @@
             :source (field 'source expr))
      :loop-locals loop-locals
      :args args
-     :children (concat loop-locals args)
+     :children (concat (map :init loop-locals) args)
      :Expr-obj expr}))
 
 (defmethod analysis->map Compiler$MethodParamExpr
