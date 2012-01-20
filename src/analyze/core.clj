@@ -361,7 +361,7 @@
    :body (analysis->map (.body method) env)
    :required-params (vec (map local-binding (.reqParms method) (repeat env)))
    :rest-param (when-let [rest-param (.restParm method)]
-                 (analysis->map rest-param))
+                 (local-binding rest-param env))
    :FnMethod-obj method})
 
 (defmethod analysis->map Compiler$FnExpr
