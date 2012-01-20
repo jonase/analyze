@@ -371,7 +371,7 @@
      :env env
      :methods methods
      :variadic-method (when-let [variadic-method (.variadicMethod expr)]
-                        (analysis->map variadic-method env))
+                        (fn-method variadic-method env))
      :tag (.tag expr)
      :name (symbol (or (.thisName expr) ""))
      :children (map :body methods)
