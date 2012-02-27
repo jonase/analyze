@@ -22,12 +22,23 @@
             :children
             expr))
 
+#_(defn expr-zip
+  "Return a zipper over expr"
+  [expr]
+  (zipper #(contains? % :children)
+          #(:children %)
+          #(assoc %1 :children %2)
+          expr))
+
+(defn op= [kw]
+  (fn [expr]
+    (= (:op expr) kw)))
+
+
 (comment
 (use 'analyze.core)
 (print-expr 
   (analyze-one {:ns {:name 'clojure.core} :context :eval} 
-               '(defn a 
-                  ([^bytes b] ^Integer b)
-                  ([b c] c)))
+               '(deftype A []))
   :children :Expr-obj :ObjMethod-obj :LocalBinding-obj :env :BindingInit-obj)
-  )
+)
